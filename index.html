@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Catch the Falling Shapes</title>
+  <style>
+    canvas {
+      border: 1px solid black;
+      display: block;
+      margin: 0 auto;
+    }
+    #score {
+      text-align: center;
+      font-size: 24px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="myCanvas" width="600" height="400"></canvas>
+  <div id="score">Score: 0</div>
+
+  <script>
+    // Get the canvas element
+    var canvas = document.getElementById("myCanvas");
+    var ctx = canvas.getContext("2d");
+
+    // Game variables
+    var score = 0;
+    var shapes = [];
+    var shapeSize = 30;
+    var shapeSpeed = 2;
+
+    // Game loop
+    function gameLoop() {
+      // Clear the canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Update and draw the shapes
+      updateShapes();
+      drawShapes();
+
+      // Display the score
+      ctx.font = "24px Arial";
+      ctx.fillText("Score: " + score, 10, 30);
+
+      // Request the next frame
+      requestAnimationFrame(gameLoop);
+    }
+
+    // Update the shapes
+    function updateShapes() {
+      // Create a new shape if there are less than 5
+      if (shapes.length < 5) {
+        createShape();
+      }
+
+      // Update the shapes
+      for (var i = 0; i < shapes.length; i++) {
+        shapes[i].y += shapeSpeed;
+
+        // Check if the shape is out of bounds
+        if (shapes[i].y > canvas.height) {
+          shapes.splice(i, 1);
+          i--;
+        }
+      }
+    }
+
+    // Draw the shapes
+    function drawShapes() {
+      for (var i = 0; i < shapes.length; i++) {
+        ctx.beginPath();
+        ctx.arc(shapes[i].x, shapes[i].y, shapeSize / 2, 0, 2 * Math.PI);
+        ctx.fillStyle = shapes[i].color;
+        ctx.fill();
+      }
+    }
+
+    // Create a new shape
+    function createShape() {
+      var shape = {
+        x: Math.random() * (canvas.width - shapeSize),
+        y: -shapeSize,
+        color: getRandomColor()
+      };
+      shapes.push(shape);
+    }
+
+    // Get a random color
+    function getRandomColor() {
+      var letters = '0123456789ABCDEF';
+      var color = '#';
+      for (var i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+      }
+      return color;
+    }
+
+    // Handle clicks
+    canvas.addEventListener("click", function(e) {
+      var rect = canvas.getBoundingClientRect();
+      var x = e.clientX - rect.left;
+      var y = e.clientY - rect.top;
+
+      // Check if the user clicked on a shape
+      for (var i = 0; i < shapes.length; i++) {
+        if (
+          x >= shapes[i].x - shapeSize / 2 &&
+          x <= shapes[i].x + shapeSize / 2 &&
+          y >= shapes[i].y - shapeSize / 2 &&
+          y <= shapes[i].y + shapeSize / 2
+        ) {
+          // Remove the shape and update the score
+          shapes.splice(i, 1);
+          score++;
+          document.getElementById("score").textContent = "Score: " + score;
+          break;
+        }
+      }
+    });
+
+    // Start the game loop
+    gameLoop();
+  </script>
+</body>
+</html>
