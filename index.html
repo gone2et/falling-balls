@@ -8,7 +8,7 @@ border: 1px solid black;
 display: block;
 margin: 0 auto;
 }
-#score, #level, #lives, #leaderboard {
+#score, #level, #lives, {
 text-align: center;
 font-size: 24px;
 margin-top: 10px;
@@ -31,7 +31,6 @@ display: none;
 <div id="score">Score: 0</div>
 <div id="level">Level: 1</div>
 <div id="lives">Lives: 10</div>
-<div id="leaderboard">Leaderboard</div>
 <div id="game-over">
 <h1>Game Over</h1>
 <p>Your final score is <span id="final-score"></span></p>
@@ -56,7 +55,6 @@ var shapeSpeed = 2;
 var maxShapes = 4;
 var spawnRate = 1300; // in milliseconds
 var playerName = "";
-var leaderboard = [];
 var gameStarted = false;
 
 // Name input and start game
@@ -181,20 +179,7 @@ break;
 function showGameOver() {
 gameStarted = false;
 document.getElementById("final-score").textContent = score;
-leaderboard.push({ name: playerName, score: score });
-leaderboard.sort((a, b) => b.score - a.score);
-updateLeaderboard();
-document.getElementById("game-over").style.display = "block";
-}
 
-// Update the leaderboard
-function updateLeaderboard() {
-var leaderboardHTML = "<h2>Leaderboard</h2>";
-for (var i = 0; i < Math.min(5, leaderboard.length); i++) {
-leaderboardHTML += `<div>${i + 1}. ${leaderboard[i].name} - ${leaderboard[i].score}</div>`;
-}
-document.getElementById("leaderboard").innerHTML = leaderboardHTML;
-}
 
 // Reset the game
 function resetGame() {
