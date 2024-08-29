@@ -13,7 +13,7 @@ text-align: center;
 font-size: 24px;
 margin-top: 10px;
 }
-#game-over, #name-input {
+#game-over, #start-screen {
 position: absolute;
 top: 50%;
 left: 50%;
@@ -36,15 +36,15 @@ display: none;
 <p>Your final score is <span id="final-score"></span></p>
 <button onclick="resetGame()">Play Again</button>
 </div>
-<div id="name-input">
-<h1>Enter your name:</h1>
-<input type="text" id="name-field" placeholder="Your name">
+<div id="start-screen">
+<h1>Catch the Falling Shapes!</h1>
 <button onclick="startGame()">Start Game</button>
 </div>
 <script>
 // Get the canvas element
 var canvas = document.getElementById("myCanvas");
 var ctx = canvas.getContext("2d");
+
 // Game variables
 var score = 0;
 var level = 1;
@@ -54,153 +54,139 @@ var shapeSize = 30;
 var shapeSpeed = 2;
 var maxShapes = 4;
 var spawnRate = 1300; // in milliseconds
-var playerName = "";
 var gameStarted = false;
 
-// Name input and start game
+// Show the start screen
+document.getElementById("start-screen").style.display = "block";
+
+// Start game
 function startGame() {
-playerName = document.getElementById("name-field").value.trim();
-if (playerName !== "") {
-document.getElementById("name-input").style.display = "none";
-gameStarted = true;
-gameLoop();
-setInterval(createShape, spawnRate);
-}
+    document.getElementById("start-screen").style.display = "none";
+    gameStarted = true;
+    gameLoop();
+    setInterval(createShape, spawnRate);
 }
 
 // Game loop
 function gameLoop() {
-if (!gameStarted) return;
-// Clear the canvas
-ctx.clearRect(0, 0, canvas.width, canvas.height);
-// Update and draw the shapes
-updateShapes();
-drawShapes();
-// Display the score, level, and lives
-ctx.font = "24px Arial";
-ctx.fillText("Score: " + score, 10, 30);
-ctx.fillText("Level: " + level, 10, 60);
-ctx.fillText("Lives: " + lives, 10, 90);
-ctx.fillText("Player: " + playerName, 10, 120);
-// Request the next frame
-requestAnimationFrame(gameLoop);
+    if (!gameStarted) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    updateShapes();
+    drawShapes();
+    ctx.font = "24px Arial";
+    ctx.fillText("Score: " + score, 10, 30);
+    ctx.fillText("Level: " + level, 10, 60);
+    ctx.fillText("Lives: " + lives, 10, 90);
+    requestAnimationFrame(gameLoop);
 }
 
 // Update the shapes
 function updateShapes() {
-if (!gameStarted) return;
-// Create new shapes based on the current level
-if (shapes.length < maxShapes) {
-createShape();
-}
-
-// Update the shapes
-for (var i = 0; i < shapes.length; i++) {
-shapes[i].y += shapes[i].speed;
-// Check if the shape is out of bounds
-if (shapes[i].y > canvas.height) {
-shapes.splice(i, 1);
-i--;
-lives--;
-document.getElementById("lives").textContent = "Lives: " + lives;
-if (lives === 0) {
-showGameOver();
-}
-}
-}
+    if (!gameStarted) return;
+    if (shapes.length < maxShapes) {
+        createShape();
+    }
+    for (var i = 0; i < shapes.length; i++) {
+        shapes[i].y += shapes[i].speed;
+        if (shapes[i].y > canvas.height) {
+            shapes.splice(i, 1);
+            i--;
+            lives--;
+            document.getElementById("lives").textContent = "Lives: " + lives;
+            if (lives === 0) {
+                showGameOver();
+            }
+        }
+    }
 }
 
 // Draw the shapes
 function drawShapes() {
-for (var i = 0; i < shapes.length; i++) {
-ctx.beginPath();
-ctx.arc(shapes[i].x, shapes[i].y, shapeSize / 2, 0, 2 * Math.PI);
-ctx.fillStyle = shapes[i].color;
-ctx.fill();
-}
+    for (var i = 0; i < shapes.length; i++) {
+        ctx.beginPath();
+        ctx.arc(shapes[i].x, shapes[i].y, shapeSize / 2, 0, 2 * Math.PI);
+        ctx.fillStyle = shapes[i].color;
+        ctx.fill();
+    }
 }
 
 // Create a new shape
 function createShape() {
-if (!gameStarted) return;
-var shape = {
-x: Math.random() * (canvas.width - shapeSize),
-y: -shapeSize,
-speed: shapeSpeed + ((level - 1) * 0.2),
-color: getRandomColor()
-};
-shapes.push(shape);
-
-// Slightly increase the spawn rate and max shapes as the level progresses
-spawnRate = 1300 - ((level - 1) * 50);
-maxShapes = 4 + ((level - 1) * 1);
+    if (!gameStarted) return;
+    var shape = {
+        x: Math.random() * (canvas.width - shapeSize),
+        y: -shapeSize,
+        speed: shapeSpeed + ((level - 1) * 0.2),
+        color: getRandomColor()
+    };
+    shapes.push(shape);
+    spawnRate = 1300 - ((level - 1) * 50);
+    maxShapes = 4 + ((level - 1) * 1);
 }
 
 // Get a random color
 function getRandomColor() {
-var letters = '0123456789ABCDEF';
-var color = '#';
-for (var i = 0; i < 6; i++) {
-color += letters[Math.floor(Math.random() * 16)];
-}
-return color;
+    var letters = '0123456789ABCDEF';
+    var color = '#';
+    for (var i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
 }
 
 // Handle clicks
 canvas.addEventListener("click", function(e) {
-if (!gameStarted) return;
-var rect = canvas.getBoundingClientRect();
-var x = e.clientX - rect.left;
-var y = e.clientY - rect.top;
-// Check if the user clicked on a shape
-for (var i = 0; i < shapes.length; i++) {
-if (
-x >= shapes[i].x - shapeSize / 2 &&
-x <= shapes[i].x + shapeSize / 2 &&
-y >= shapes[i].y - shapeSize / 2 &&
-y <= shapes[i].y + shapeSize / 2
-) {
-// Remove the shape, update the score, and increase the level
-shapes.splice(i, 1);
-score++;
-if (score % 20 === 0) {
-level++;
-lives++;
-document.getElementById("level").textContent = "Level: " + level;
-document.getElementById("lives").textContent = "Lives: " + lives;
-}
-document.getElementById("score").textContent = "Score: " + score;
-break;
-}
-}
+    if (!gameStarted) return;
+    var rect = canvas.getBoundingClientRect();
+    var x = e.clientX - rect.left;
+    var y = e.clientY - rect.top;
+    for (var i = 0; i < shapes.length; i++) {
+        if (
+            x >= shapes[i].x - shapeSize / 2 &&
+            x <= shapes[i].x + shapeSize / 2 &&
+            y >= shapes[i].y - shapeSize / 2 &&
+            y <= shapes[i].y + shapeSize / 2
+        ) {
+            shapes.splice(i, 1);
+            score++;
+            if (score % 20 === 0) {
+                level++;
+                lives++;
+                document.getElementById("level").textContent = "Level: " + level;
+                document.getElementById("lives").textContent = "Lives: " + lives;
+            }
+            document.getElementById("score").textContent = "Score: " + score;
+            break;
+        }
+    }
 });
 
 // Show the game over screen
 function showGameOver() {
-gameStarted = false;
-document.getElementById("final-score").textContent = score;
-document.getElementById("game-over").style.display = "block";
+    gameStarted = false;
+    document.getElementById("final-score").textContent = score;
+    document.getElementById("game-over").style.display = "block";
 }
 
 // Reset the game
 function resetGame() {
-gameStarted = false;
-score = 0;
-level = 1;
-lives = 10;
-shapes = [];
-shapeSpeed = 2;
-maxShapes = 4;
-spawnRate = 1300;
-document.getElementById("game-over").style.display = "none";
-document.getElementById("score").textContent = "Score: 0";
-document.getElementById("level").textContent = "Level: 1";
-document.getElementById("lives").textContent = "Lives: 10";
-document.getElementById("name-input").style.display = "block";
+    gameStarted = false;
+    score = 0;
+    level = 1;
+    lives = 10;
+    shapes = [];
+    shapeSpeed = 2;
+    maxShapes = 4;
+    spawnRate = 1300;
+    document.getElementById("game-over").style.display = "none";
+    document.getElementById("score").textContent = "Score: 0";
+    document.getElementById("level").textContent = "Level: 1";
+    document.getElementById("lives").textContent = "Lives: 10";
+    document.getElementById("start-screen").style.display = "block";
 }
 
-// Start the name input
-document.getElementById("name-input").style.display = "block";
+// Start the start screen
+document.getElementById("start-screen").style.display = "block";
 </script>
 </body>
 </html>
